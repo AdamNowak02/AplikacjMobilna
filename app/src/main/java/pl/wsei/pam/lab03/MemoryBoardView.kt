@@ -15,25 +15,32 @@ class MemoryBoardView(
     private val rows: Int
 ) {
     private val tiles: MutableMap<String, Tile> = mutableMapOf()
+
+    // 🔥 Więcej ikon, żeby było ciekawiej
     private val icons: List<Int> = listOf(
         R.drawable.baseline_rocket_launch_24,
         R.drawable.baseline_star_24,
         R.drawable.baseline_favorite_24,
-        R.drawable.baseline_android_24
-        // Dodaj więcej ikon, jeśli potrzeba!
+        R.drawable.baseline_android_24,
+        R.drawable.baseline_air_24,
+        R.drawable.baseline_airplanemode_active_24,
+        R.drawable.baseline_bolt_24,
+        R.drawable.baseline_bluetooth_24
     )
 
-    private var isSound = true  // Stan dźwięku (włączony/wyłączony)
-    private val completionPlayer: MediaPlayer = MediaPlayer.create(gridLayout.context, R.raw.completion)  // Załaduj odpowiedni dźwięk
+    private var isSound = true
+    private val completionPlayer: MediaPlayer = MediaPlayer.create(gridLayout.context, R.raw.completion)
 
     init {
-        val shuffledIcons: MutableList<Int> = mutableListOf<Int>().also {
-            it.addAll(icons.subList(0, cols * rows / 2))
-            it.addAll(icons.subList(0, cols * rows / 2))
-            it.shuffle()
+        val totalTiles = cols * rows
+        if (totalTiles % 2 != 0) {
+            throw IllegalArgumentException("Liczba kafelków musi być parzysta!")
         }
 
-
+        // 🔥 Gwarantujemy, że każda ikona jest dokładnie 2 razy
+        val neededPairs = totalTiles / 2
+        val selectedIcons = icons.shuffled().take(neededPairs) // Pobieramy tyle ikon, ile potrzeba
+        val shuffledIcons = (selectedIcons + selectedIcons).shuffled().toMutableList() // 🔥 Poprawione! Teraz to `MutableList`
 
         for (row in 0 until rows) {
             for (col in 0 until cols) {
@@ -47,7 +54,7 @@ class MemoryBoardView(
                     layoutParams.rowSpec = GridLayout.spec(row, 1, 1f)
                     it.layoutParams = layoutParams
                 }
-                val tileResource = shuffledIcons.removeAt(0)
+                val tileResource = shuffledIcons.removeAt(0) // 🔥 Teraz działa, bo shuffledIcons to `MutableList`
                 addTile(button, tileResource)
                 gridLayout.addView(button)
             }
@@ -61,23 +68,26 @@ class MemoryBoardView(
 
     private fun onClickTile(v: View) {
         val tile = tiles[v.tag]
-        if (tile == null || tile.revealed) return  // Zapobiega ponownemu kliknięciu
+        if (tile == null || tile.revealed) return
 
         tile.revealed = true
         matchedPair.push(tile)
 
-        // Poprawione wywołanie process() - przekazujemy tiles jako argument
-        val matchResult = logic.process({ tile?.tileResource ?: -1 }, tile)
+        val matchResult = logic.process({ tile.tileResource }, tile)
 
         onGameChangeStateListener(MemoryGameEvent(matchedPair.toList(), matchResult))
 
-        // Odgrywaj dźwięk, jeśli jest włączony
         if (isSound) {
-            completionPlayer.start()  // Uruchamiamy dźwięk
+            completionPlayer.start()
         }
 
         if (matchResult != GameStates.Matching) {
             matchedPair.clear()
+        }
+
+        // 🔥 Sprawdzamy, czy wszystkie kafelki są odkryte
+        if (tiles.values.all { it.revealed }) {
+            Toast.makeText(gridLayout.context, "Gra zakończona!", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -85,7 +95,6 @@ class MemoryBoardView(
         onGameChangeStateListener = listener
     }
 
-    // Dodana metoda do zmiany stanu dźwięku
     fun setSoundEnabled(enabled: Boolean) {
         isSound = enabled
     }
@@ -95,5 +104,4 @@ class MemoryBoardView(
         val tile = Tile(button, resourceImage, deckResource)
         tiles[button.tag.toString()] = tile
     }
-
 }

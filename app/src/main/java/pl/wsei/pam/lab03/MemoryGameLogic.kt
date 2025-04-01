@@ -18,10 +18,13 @@ class MemoryGameLogic(private val maxMatches: Int) {
 
         selectedTiles.add(tile)
         val result = selectedTiles[0].tileResource == selectedTiles[1].tileResource
-        matches += if (result) 1 else 0
+        if (result) matches++
 
         val gameState = when {
-            result && matches == maxMatches -> GameStates.Finished
+            matches == maxMatches -> {
+                // 🔥 Dodajemy obsługę końca gry
+                GameStates.Finished
+            }
             result -> GameStates.Match
             else -> GameStates.NoMatch
         }

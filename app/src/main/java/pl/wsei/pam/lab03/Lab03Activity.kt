@@ -6,6 +6,7 @@ import android.animation.ObjectAnimator
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
@@ -69,12 +70,14 @@ class Lab03Activity : AppCompatActivity() {
                             animatePairedButton(it.button) { it.revealed = true }
                         }
                     }
+
                     GameStates.NoMatch -> {
                         if (isSoundOn) negativePlayer.start()
                         animateMismatchedPair(e.tiles[0].button, e.tiles[1].button) {
                             e.tiles.forEach { it.revealed = false }
                         }
                     }
+
                     GameStates.Finished -> {
                         Toast.makeText(this, "Gra zakończona!", Toast.LENGTH_SHORT).show()
                     }
@@ -96,21 +99,32 @@ class Lab03Activity : AppCompatActivity() {
     }
 
     private fun generateBoard(rows: Int, columns: Int) {
+        val totalTiles = rows * columns
+        if (totalTiles % 2 != 0) {
+            throw IllegalArgumentException("Liczba kafelków musi być parzysta!")
+        }
+
         val icons = listOf(
             R.drawable.baseline_square_24,
             R.drawable.baseline_star_24,
             R.drawable.baseline_favorite_24,
             R.drawable.baseline_face_24,
-            R.drawable.baseline_android_24
+            R.drawable.baseline_android_24,
+            R.drawable.baseline_air_24,
+            R.drawable.baseline_airplanemode_active_24,
+            R.drawable.baseline_bolt_24,
+            R.drawable.baseline_bluetooth_24
         )
 
-        val backResource = R.drawable.baseline_rocket_launch_24
-        val shuffledIcons = (icons + icons).shuffled()
+        val neededPairs = totalTiles / 2
+        val selectedIcons = icons.shuffled().take(neededPairs) // Wybieramy dokładnie tyle ikon, ile potrzeba
+        val shuffledIcons = (selectedIcons + selectedIcons).shuffled() // Duplikujemy i mieszamy
 
+        val backResource = R.drawable.baseline_rocket_launch_24
         main.removeAllViews()
         tiles.clear()
 
-        for (i in 0 until rows * columns) {
+        for (i in 0 until totalTiles) {
             val btn = ImageButton(this).also {
                 val layoutParams = GridLayout.LayoutParams().apply {
                     width = 0
@@ -123,24 +137,39 @@ class Lab03Activity : AppCompatActivity() {
                 main.addView(it)
             }
 
-            val tile = Tile(btn, shuffledIcons[i % shuffledIcons.size], backResource)
+            val tile = Tile(btn, shuffledIcons[i], backResource) // Pobieramy kolejny kafelek z przygotowanej listy
             tiles.add(tile)
-
             btn.setOnClickListener { onTileClicked(tile) }
         }
     }
+
 
     private fun onTileClicked(tile: Tile) {
         if (tile.revealed) return
         tile.revealed = true
         gameLogic.process({ tile.tileResource }, tile)
+
+        // 🔥 Sprawdzamy, czy to ostatnie dwie karty
+        if (tiles.count { !it.revealed } == 0) {
+            Toast.makeText(this, "🎉 Gra zakończona!", Toast.LENGTH_SHORT).show()
+
+            // 🚀 Ukryjemy wszystkie karty animacją
+            tiles.forEach { animatePairedButton(it.button) { it.button.visibility = View.GONE } }
+        }
     }
+
+
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        val stateArray = tiles.map { if (it.revealed) it.tileResource else -1 }.toTypedArray()
-        outState.putIntegerArrayList("boardState", ArrayList(stateArray.toList()))
+
+        val revealedStates = tiles.map { it.revealed }.toBooleanArray() // Czy kafelki są odkryte?
+        val tileIcons = tiles.map { it.tileResource }.toIntArray() // Jaka ikona jest przypisana?
+
+        outState.putBooleanArray("revealedStates", revealedStates)
+        outState.putIntArray("tileIcons", tileIcons)
     }
+
 
     private fun restoreBoardState(state: Array<Int>) {
         for (i in tiles.indices) {
@@ -159,6 +188,7 @@ class Lab03Activity : AppCompatActivity() {
                 toggleSound(item)
                 true
             }
+
             else -> super.onOptionsItemSelected(item)
         }
     }
@@ -198,6 +228,7 @@ class Lab03Activity : AppCompatActivity() {
                 button.visibility = ImageButton.GONE
                 action.run()
             }
+
             override fun onAnimationCancel(animator: Animator) {}
             override fun onAnimationRepeat(animator: Animator) {}
         })
@@ -205,21 +236,33 @@ class Lab03Activity : AppCompatActivity() {
         set.start()
     }
 
-    // Przywrócona metoda
-    private fun animateMismatchedPair(button1: ImageButton, button2: ImageButton, action: Runnable) {
+    private fun animateMismatchedPair(
+        button1: ImageButton,
+        button2: ImageButton,
+        action: Runnable
+    ) {
         val set = AnimatorSet()
-        val shake1 = ObjectAnimator.ofFloat(button1, "translationX", -20f, 20f, -15f, 15f, -5f, 5f, 0f)
-        val shake2 = ObjectAnimator.ofFloat(button2, "translationX", -20f, 20f, -15f, 15f, -5f, 5f, 0f)
+        val shake1 =
+            ObjectAnimator.ofFloat(button1, "translationX", -20f, 20f, -15f, 15f, -5f, 5f, 0f)
+        val shake2 =
+            ObjectAnimator.ofFloat(button2, "translationX", -20f, 20f, -15f, 15f, -5f, 5f, 0f)
 
         set.duration = 500
         set.interpolator = LinearInterpolator()
         set.playTogether(shake1, shake2)
+
         set.addListener(object : Animator.AnimatorListener {
             override fun onAnimationStart(animator: Animator) {}
-            override fun onAnimationEnd(animator: Animator) { action.run() }
+
+            override fun onAnimationEnd(animator: Animator) {
+                action.run()
+            }
+
             override fun onAnimationCancel(animator: Animator) {}
+
             override fun onAnimationRepeat(animator: Animator) {}
         })
+
         set.start()
     }
 }
