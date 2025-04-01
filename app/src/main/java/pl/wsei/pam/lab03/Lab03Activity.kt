@@ -143,7 +143,6 @@ class Lab03Activity : AppCompatActivity() {
         }
     }
 
-
     private fun onTileClicked(tile: Tile) {
         if (tile.revealed) return
         tile.revealed = true
@@ -158,17 +157,49 @@ class Lab03Activity : AppCompatActivity() {
         }
     }
 
-
-
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
 
-        val revealedStates = tiles.map { it.revealed }.toBooleanArray() // Czy kafelki są odkryte?
-        val tileIcons = tiles.map { it.tileResource }.toIntArray() // Jaka ikona jest przypisana?
+        val revealedStates = tiles.map { it.revealed }.toBooleanArray() // Czy kafelek odkryty?
+        val tileIcons = tiles.map { it.tileResource }.toIntArray() // Ikony kafelków
+        val visibilityStates = tiles.map { it.button.visibility == View.VISIBLE }.toBooleanArray() // Czy kafelek widoczny?
 
         outState.putBooleanArray("revealedStates", revealedStates)
         outState.putIntArray("tileIcons", tileIcons)
+        outState.putBooleanArray("visibilityStates", visibilityStates) // Zapisujemy stan widoczności
     }
+
+
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+
+        val revealedStates = savedInstanceState.getBooleanArray("revealedStates") ?: return
+        val tileIcons = savedInstanceState.getIntArray("tileIcons") ?: return
+        val visibilityStates = savedInstanceState.getBooleanArray("visibilityStates") ?: return
+
+        if (revealedStates.size == tiles.size && tileIcons.size == tiles.size && visibilityStates.size == tiles.size) {
+            for (i in tiles.indices) {
+                tiles[i].revealed = revealedStates[i]
+                tiles[i].tileResource = tileIcons[i]
+
+                // Przywracamy stan widoczności kafelka
+                if (visibilityStates[i]) {
+                    tiles[i].button.visibility = View.VISIBLE
+                } else {
+                    tiles[i].button.visibility = View.INVISIBLE
+                }
+
+                // Jeśli kafelek był odkryty, pokazujemy ikonę
+                if (tiles[i].revealed) {
+                    tiles[i].button.setImageResource(tiles[i].tileResource)
+                } else {
+                    tiles[i].button.setImageResource(R.drawable.baseline_rocket_launch_24) // Tył kafelka
+                }
+            }
+        }
+    }
+
 
 
     private fun restoreBoardState(state: Array<Int>) {
