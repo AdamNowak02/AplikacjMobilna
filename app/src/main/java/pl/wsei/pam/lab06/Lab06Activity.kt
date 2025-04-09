@@ -14,7 +14,6 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import pl.wsei.pam.lab06.ui.theme.Lab06Theme
 
-
 class Lab06Activity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -24,7 +23,7 @@ class Lab06Activity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    MainScreen()
+                    MainScreen()  // Wywołanie głównej nawigacji
                 }
             }
         }
@@ -33,16 +32,24 @@ class Lab06Activity : ComponentActivity() {
 
 @Composable
 fun MainScreen() {
+    // Tworzenie kontrolera nawigacji
     val navController = rememberNavController()
+
+    // Definicja NavHost, który zarządza przejściami między ekranami
     NavHost(navController = navController, startDestination = "list") {
-        composable("list") { ListScreen(navController) }
-        composable("form") { FormScreen(navController) }
+        composable("list") {
+            ListScreen(navController)  // Ekran listy
+        }
+        composable("form") {
+            FormScreen(navController)  // Ekran formularza
+        }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun MainScreenPreview() {
+    // Podgląd głównego ekranu w kontekście motywu aplikacji
     Lab06Theme {
         MainScreen()
     }
