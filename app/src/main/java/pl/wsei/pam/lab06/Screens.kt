@@ -1,5 +1,8 @@
 package pl.wsei.pam.lab06
 
+import android.app.DatePickerDialog
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.LaunchedEffect
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -98,6 +101,11 @@ fun FormScreen(navController: NavController) {
     var priority by remember { mutableStateOf(Priority.Medium) }
     var isDone by remember { mutableStateOf(false) }
 
+    var expanded by remember { mutableStateOf(false) }
+    var showDatePicker by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
+
     Scaffold(
         topBar = {
             AppTopBar(
@@ -123,33 +131,62 @@ fun FormScreen(navController: NavController) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Wybór daty deadline (możesz użyć DatePickerDialog w zależności od implementacji)
+            // Wybór daty
             Text("Wybierz datę deadline:")
-            // Poniżej można dodać komponent do wybierania daty, np. DatePickerDialog
-            // Na razie zakładajmy, że data jest ustawiona na dzisiejszą
-            Text(text = deadline.toString())
+            Button(onClick = { showDatePicker = true }) {
+                Text(text = deadline.toString())
+            }
+
+            if (showDatePicker) {
+                val datePickerDialog = remember {
+                    DatePickerDialog(
+                        context,
+                        { _, year, month, dayOfMonth ->
+                            deadline = LocalDate.of(year, month + 1, dayOfMonth)
+                            showDatePicker = false
+                        },
+                        deadline.year,
+                        deadline.monthValue - 1,
+                        deadline.dayOfMonth
+                    )
+                }
+
+                // Wyświetl picker, gdy tylko `showDatePicker` jest true
+                LaunchedEffect(Unit) {
+                    datePickerDialog.show()
+                }
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
             // Wybór priorytetu
             Text("Wybierz priorytet:")
+            Button(
+                onClick = { expanded = true },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(text = priority.name)
+            }
+
             DropdownMenu(
-                expanded = true,
-                onDismissRequest = {},
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Priority.values().forEach { priorityItem ->
                     DropdownMenuItem(
-                        onClick = { priority = priorityItem },
+                        onClick = {
+                            priority = priorityItem
+                            expanded = false
+                        },
                         text = { Text(text = priorityItem.name) }
                     )
                 }
-
             }
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Status wykonania (checkbox)
+            // Status wykonania
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -168,9 +205,8 @@ fun FormScreen(navController: NavController) {
             // Przycisk "Zapisz"
             Button(
                 onClick = {
-                    // Dodajemy nowe zadanie
                     val newTask = TodoTask(title, deadline, isDone, priority)
-                    // Na razie tylko wracamy do ekranu listy
+                    // Tu warto dodać do listy, np. zapisać do ViewModel lub pamięci
                     navController.navigate("list")
                 },
                 modifier = Modifier.fillMaxWidth()
@@ -180,3 +216,4 @@ fun FormScreen(navController: NavController) {
         }
     }
 }
+
