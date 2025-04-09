@@ -23,7 +23,7 @@ class Lab06Activity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    MainScreen()  // Wywołanie głównej nawigacji
+                    MainScreen()
                 }
             }
         }
@@ -32,24 +32,16 @@ class Lab06Activity : ComponentActivity() {
 
 @Composable
 fun MainScreen() {
-    // Tworzenie kontrolera nawigacji
     val navController = rememberNavController()
-
-    // Definicja NavHost, który zarządza przejściami między ekranami
     NavHost(navController = navController, startDestination = "list") {
-        composable("list") {
-            ListScreen(navController)  // Ekran listy
-        }
-        composable("form") {
-            FormScreen(navController)  // Ekran formularza
-        }
+        composable("list") { ListScreen(navController) }
+        composable("form") { FormScreen(navController) }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun MainScreenPreview() {
-    // Podgląd głównego ekranu w kontekście motywu aplikacji
     Lab06Theme {
         MainScreen()
     }
