@@ -2,7 +2,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("kotlin-kapt")
-
+    id("com.google.devtools.ksp") version "1.9.20-1.0.14"
 }
 
 android {
@@ -48,7 +48,9 @@ android {
 }
 
 dependencies {
-    // Core
+    val room_version = "2.6.1"
+
+    // Core dependencies
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.11.0")
@@ -62,7 +64,7 @@ dependencies {
     implementation(platform("androidx.compose:compose-bom:2024.04.01"))
 
     // Compose
-    implementation("androidx.activity:activity-compose:1.8.2") // Zależy od wersji
+    implementation("androidx.activity:activity-compose:1.8.2")
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
@@ -74,7 +76,13 @@ dependencies {
     // Lifecycle
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
-    implementation("androidx.room:room-ktx:2.6.1")
+
+    // Room (baza danych)
+    implementation("androidx.room:room-runtime:$room_version")
+    implementation("androidx.room:room-ktx:$room_version")
+    ksp("androidx.room:room-compiler:$room_version")
+
+    // Transport API
     implementation("com.google.android.datatransport:transport-api:4.0.0")
     implementation("androidx.test:core-ktx:1.6.1")
 
@@ -88,4 +96,3 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 }
-

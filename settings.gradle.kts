@@ -5,7 +5,7 @@ pluginManagement {
         gradlePluginPortal()
     }
     plugins {
-        id("org.jetbrains.kotlin.android") version "1.9.22"  // Ustawiamy wersję Kotlin na 1.9.22
+        id("org.jetbrains.kotlin.android") version "1.9.22"
     }
 }
 
