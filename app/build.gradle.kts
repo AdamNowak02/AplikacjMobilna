@@ -60,6 +60,10 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
     implementation("androidx.compose.foundation:foundation:1.4.0")
 
+
+    //Wklejone na test
+    implementation("androidx.lifecycle:lifecycle-viewmodel:2.6.2")
+
     // Compose platform BOM
     implementation(platform("androidx.compose:compose-bom:2024.04.01"))
 

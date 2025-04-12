@@ -27,6 +27,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -36,23 +37,22 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import kotlinx.coroutines.launch
-import pl.wsei.pam.lab06.data.TodoTaskRepository
 import pl.wsei.pam.lab06.model.Priority
 import pl.wsei.pam.lab06.model.TodoTask
+import pl.wsei.pam.lab06.ui.viewmodel.AppViewModelProvider
+import pl.wsei.pam.lab06.ui.viewmodel.ListViewModel
 import java.time.LocalDate
 
-// Ekran listy
+// Ekran listy — używa teraz ViewModel!
 @Composable
-fun ListScreen(navController: NavController, todoTaskRepository: TodoTaskRepository) {
-    var todoTasks by remember { mutableStateOf<List<TodoTask>>(emptyList()) }
-
-    LaunchedEffect(Unit) {
-        todoTaskRepository.getAllAsStream().collect { tasks ->
-            todoTasks = tasks
-        }
-    }
+fun ListScreen(
+    navController: NavController,
+    viewModel: ListViewModel = viewModel(factory = AppViewModelProvider.Factory)
+) {
+    val listUiState by viewModel.listUiState.collectAsState()
 
     Scaffold(
         topBar = {
@@ -77,14 +77,14 @@ fun ListScreen(navController: NavController, todoTaskRepository: TodoTaskReposit
         }
     ) { innerPadding ->
         LazyColumn(modifier = Modifier.padding(innerPadding)) {
-            items(items = todoTasks) { item ->
+            items(items = listUiState.items) { item ->
                 ListItem(item = item)
             }
         }
     }
 }
 
-// Komponent dla pojedynczego elementu listy
+// ListItem — bez zmian
 @Composable
 fun ListItem(item: TodoTask, modifier: Modifier = Modifier) {
     ElevatedCard(
@@ -105,9 +105,9 @@ fun ListItem(item: TodoTask, modifier: Modifier = Modifier) {
     }
 }
 
-// Ekran formularza
+// FormScreen — bez zmian (jeszcze nie podłączamy ViewModel)
 @Composable
-fun FormScreen(navController: NavController, todoTaskRepository: TodoTaskRepository) {
+fun FormScreen(navController: NavController, todoTaskRepository: pl.wsei.pam.lab06.data.TodoTaskRepository) {
     var title by remember { mutableStateOf("") }
     var deadline by remember { mutableStateOf(LocalDate.now()) }
     var priority by remember { mutableStateOf(Priority.Medium) }
@@ -117,7 +117,7 @@ fun FormScreen(navController: NavController, todoTaskRepository: TodoTaskReposit
     var showDatePicker by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
-    val scope = rememberCoroutineScope()  // Korutyna dla operacji asynchronicznych
+    val scope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
@@ -134,7 +134,6 @@ fun FormScreen(navController: NavController, todoTaskRepository: TodoTaskReposit
                 .padding(innerPadding)
                 .padding(16.dp)
         ) {
-            // Tytuł zadania
             TextField(
                 value = title,
                 onValueChange = { title = it },
@@ -144,7 +143,6 @@ fun FormScreen(navController: NavController, todoTaskRepository: TodoTaskReposit
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Wybór daty
             Text("Wybierz datę deadline:")
             Button(onClick = { showDatePicker = true }) {
                 Text(text = deadline.toString())
@@ -163,8 +161,6 @@ fun FormScreen(navController: NavController, todoTaskRepository: TodoTaskReposit
                         deadline.dayOfMonth
                     )
                 }
-
-                // Wyświetl picker, gdy tylko `showDatePicker` jest true
                 LaunchedEffect(Unit) {
                     datePickerDialog.show()
                 }
@@ -172,7 +168,6 @@ fun FormScreen(navController: NavController, todoTaskRepository: TodoTaskReposit
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Wybór priorytetu
             Text("Wybierz priorytet:")
             Button(
                 onClick = { expanded = true },
@@ -199,7 +194,6 @@ fun FormScreen(navController: NavController, todoTaskRepository: TodoTaskReposit
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Status wykonania
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -215,20 +209,16 @@ fun FormScreen(navController: NavController, todoTaskRepository: TodoTaskReposit
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Przycisk "Zapisz"
             Button(
                 onClick = {
-                    // Tworzenie nowego zadania
                     val newTask = TodoTask(
-                        title = title,  // Tytuł zadania (String)
-                        deadline = deadline,  // Deadline (LocalDate)
-                        isDone = isDone,  // Status wykonania (Boolean)
-                        priority = priority  // Priorytet (Priority)
+                        title = title,
+                        deadline = deadline,
+                        isDone = isDone,
+                        priority = priority
                     )
-
-                    // Uruchomienie korutyny, by wykonać operację w tle
                     scope.launch {
-                        todoTaskRepository.insertItem(newTask) // Dodanie zadania do repozytorium
+                        todoTaskRepository.insertItem(newTask)
                     }
                     navController.navigate("list")
                 },

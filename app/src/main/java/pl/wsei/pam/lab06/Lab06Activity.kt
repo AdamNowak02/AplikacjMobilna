@@ -38,15 +38,16 @@ class Lab06Activity : ComponentActivity() {
 fun MainScreen() {
     val navController = rememberNavController()
 
-    // Tworzymy instancję repozytorium
-    val context = LocalContext.current // Pobranie kontekstu
-    val todoTaskRepository: TodoTaskRepository = DatabaseTodoTaskRepository(AppDatabase.getInstance(context).taskDao())
+    val context = LocalContext.current
+    val todoTaskRepository: TodoTaskRepository =
+        DatabaseTodoTaskRepository(AppDatabase.getInstance(context).taskDao())
 
     NavHost(navController = navController, startDestination = "list") {
-        composable("list") { ListScreen(navController, todoTaskRepository) }
-        composable("form") { FormScreen(navController, todoTaskRepository) }
+        composable("list") { ListScreen(navController) } // <- usunięto drugi argument
+        composable("form") { FormScreen(navController, todoTaskRepository) } // Form zostaje tak jak jest
     }
 }
+
 
 @Preview(showBackground = true)
 @Composable
