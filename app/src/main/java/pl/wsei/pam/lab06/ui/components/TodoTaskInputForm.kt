@@ -10,8 +10,6 @@ import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DisplayMode
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -84,21 +82,18 @@ fun TodoTaskInputForm(
 
     // Priority
     Text("Priorytet:")
-    var expanded by remember { mutableStateOf(false) }
-    Button(onClick = { expanded = true }) {
-        Text(item.priority)
-    }
-    DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
-        Priority.values().forEach {
-            DropdownMenuItem(
+    Priority.values().forEach { priority ->
+        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+            androidx.compose.material3.RadioButton(
+                selected = item.priority == priority.name,
                 onClick = {
-                    onValueChange(item.copy(priority = it.name))
-                    expanded = false
-                },
-                text = { Text(it.name) }
+                    onValueChange(item.copy(priority = priority.name))
+                }
             )
+            Text(priority.name)
         }
     }
+
 
     Spacer(modifier = Modifier.height(16.dp))
 
