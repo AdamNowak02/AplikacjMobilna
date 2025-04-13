@@ -105,7 +105,7 @@ fun ListItem(item: TodoTask, modifier: Modifier = Modifier) {
     }
 }
 
-// FormScreen — bez zmian (jeszcze nie podłączamy ViewModel)
+// FormScreen — walidacja daty wprowadzona tutaj
 @Composable
 fun FormScreen(navController: NavController, todoTaskRepository: pl.wsei.pam.lab06.data.TodoTaskRepository) {
     var title by remember { mutableStateOf("") }
@@ -118,6 +118,11 @@ fun FormScreen(navController: NavController, todoTaskRepository: pl.wsei.pam.lab
 
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+
+    // WALIDACJA: czy data nie jest przeszła
+    val isDateValid = remember(deadline) {
+        !deadline.isBefore(LocalDate.now())
+    }
 
     Scaffold(
         topBar = {
@@ -222,6 +227,7 @@ fun FormScreen(navController: NavController, todoTaskRepository: pl.wsei.pam.lab
                     }
                     navController.navigate("list")
                 },
+                enabled = isDateValid, // WALIDACJA — przycisk aktywny tylko przy poprawnej dacie
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Zapisz zadanie")
