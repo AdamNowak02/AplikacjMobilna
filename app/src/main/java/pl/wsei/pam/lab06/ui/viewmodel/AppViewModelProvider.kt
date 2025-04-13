@@ -13,5 +13,11 @@ object AppViewModelProvider {
                 repository = app.container.todoTaskRepository
             )
         }
+        initializer {
+            val app = this[androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY] as TodoApplication
+            FormViewModel(
+                repository = app.container.todoTaskRepository
+            )
+        }
     }
 }
