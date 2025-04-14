@@ -18,7 +18,7 @@ import android.widget.ImageButton
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
-import pl.wsei.pam.lab01.R
+import pl.wsei.pam.R
 import java.util.Timer
 import kotlin.concurrent.schedule
 

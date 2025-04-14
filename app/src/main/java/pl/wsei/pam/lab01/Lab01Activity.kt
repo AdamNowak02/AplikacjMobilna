@@ -1,8 +1,14 @@
 package pl.wsei.pam.lab01
 
 import android.os.Bundle
-import android.widget.*
+import android.widget.Button
+import android.widget.CheckBox
+import android.widget.LinearLayout
+import android.widget.ProgressBar
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import pl.wsei.pam.R
+
 
 class Lab01Activity : AppCompatActivity() {
     lateinit var mLayout: LinearLayout

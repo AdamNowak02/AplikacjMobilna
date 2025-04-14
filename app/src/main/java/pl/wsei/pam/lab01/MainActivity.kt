@@ -1,6 +1,9 @@
 package pl.wsei.pam.lab01
 
+
 import android.content.Intent
+import pl.wsei.pam.R
+
 import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity

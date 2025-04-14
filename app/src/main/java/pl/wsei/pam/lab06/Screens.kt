@@ -14,17 +14,22 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -46,7 +51,46 @@ import pl.wsei.pam.lab06.ui.viewmodel.AppViewModelProvider
 import pl.wsei.pam.lab06.ui.viewmodel.ListViewModel
 import java.time.LocalDate
 
-// Ekran listy — używa teraz ViewModel!
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AppTopBar(
+    navController: NavController,
+    title: String,
+    showBackIcon: Boolean,
+    route: String,
+    onSaveClick: () -> Unit = { }
+) {
+    TopAppBar(
+        title = { Text(title) },
+        navigationIcon = {
+            if (showBackIcon) {
+                IconButton(onClick = {
+                    onSaveClick()
+                    navController.popBackStack()
+                }) {
+                    Icon(Icons.Default.Home, contentDescription = "Wróć")
+                }
+            }
+        },
+        actions = {
+            // 🔧 Nawigacja do ekranu ustawień
+            IconButton(onClick = {
+                navController.navigate("settings")
+            }) {
+                Icon(Icons.Default.Settings, contentDescription = "Ustawienia")
+            }
+
+            // 🏠 Powrót do listy
+            IconButton(onClick = {
+                navController.navigate("list")
+            }) {
+                Icon(Icons.Default.Home, contentDescription = "Lista")
+            }
+        }
+    )
+}
+
+// LISTA ZADAŃ
 @Composable
 fun ListScreen(
     navController: NavController,
@@ -70,7 +114,7 @@ fun ListScreen(
             ) {
                 Icon(
                     imageVector = Icons.Filled.Add,
-                    contentDescription = "Add task",
+                    contentDescription = "Dodaj zadanie",
                     modifier = Modifier.scale(1.5f)
                 )
             }
@@ -84,7 +128,7 @@ fun ListScreen(
     }
 }
 
-// ListItem — bez zmian
+// ELEMENT LISTY
 @Composable
 fun ListItem(item: TodoTask, modifier: Modifier = Modifier) {
     ElevatedCard(
@@ -105,7 +149,7 @@ fun ListItem(item: TodoTask, modifier: Modifier = Modifier) {
     }
 }
 
-// FormScreen — walidacja daty wprowadzona tutaj
+// FORMULARZ ZADANIA
 @Composable
 fun FormScreen(navController: NavController, todoTaskRepository: pl.wsei.pam.lab06.data.TodoTaskRepository) {
     var title by remember { mutableStateOf("") }
@@ -119,7 +163,6 @@ fun FormScreen(navController: NavController, todoTaskRepository: pl.wsei.pam.lab
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
-    // WALIDACJA: czy data nie jest przeszła
     val isDateValid = remember(deadline) {
         !deadline.isBefore(LocalDate.now())
     }
@@ -227,7 +270,7 @@ fun FormScreen(navController: NavController, todoTaskRepository: pl.wsei.pam.lab
                     }
                     navController.navigate("list")
                 },
-                enabled = isDateValid, // WALIDACJA — przycisk aktywny tylko przy poprawnej dacie
+                enabled = isDateValid,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Zapisz zadanie")

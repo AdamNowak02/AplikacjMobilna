@@ -6,16 +6,15 @@ plugins {
 }
 
 android {
-    namespace = "pl.wsei.pam.lab01"
+    namespace = "pl.wsei.pam"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "pl.wsei.pam.lab01"
+        applicationId = "pl.wsei.pam"
         minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
-
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
@@ -51,17 +50,15 @@ dependencies {
     val room_version = "2.6.1"
 
     // Core dependencies
-    implementation("androidx.core:core-ktx:1.12.0")
+    implementation("androidx.core:core-ktx:1.13.1")
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.11.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
-    implementation("androidx.compose.material3:material3:1.2.0")
+    implementation("androidx.compose.material3:material3:1.2.1")
     implementation("androidx.compose.material:material-icons-extended")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
     implementation("androidx.compose.foundation:foundation:1.4.0")
-
-
-    //Wklejone na test
+    implementation("com.google.accompanist:accompanist-permissions:0.37.2")
     implementation("androidx.lifecycle:lifecycle-viewmodel:2.6.2")
 
     // Compose platform BOM
@@ -72,14 +69,12 @@ dependencies {
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.ui:ui-tooling-preview")
-    implementation("androidx.compose.material3:material3:1.2.1")
 
     // Navigation
     implementation("androidx.navigation:navigation-compose:2.6.0")
 
     // Lifecycle
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
 
     // Room (baza danych)
     implementation("androidx.room:room-runtime:$room_version")
@@ -89,6 +84,9 @@ dependencies {
     // Transport API
     implementation("com.google.android.datatransport:transport-api:4.0.0")
     implementation("androidx.test:core-ktx:1.6.1")
+
+    // Preference
+    implementation("androidx.preference:preference-ktx:1.1.1")
 
     // Tests
     testImplementation("junit:junit:4.13.2")

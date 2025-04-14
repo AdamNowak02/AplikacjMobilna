@@ -6,7 +6,7 @@ import android.view.View
 import android.widget.GridLayout
 import android.widget.ImageButton
 import android.widget.Toast
-import pl.wsei.pam.lab01.R
+import pl.wsei.pam.R
 import java.util.*
 
 class MemoryBoardView(

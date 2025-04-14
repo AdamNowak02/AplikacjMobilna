@@ -37,7 +37,7 @@
             android:name="pl.wsei.pam.lab02.Lab02Activity"
             android:exported="false" />
         <activity
-            android:name=".MainActivity"
+            android:name="pl.wsei.pam.lab01.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -45,13 +45,20 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".Lab01Activity"
+            android:name="pl.wsei.pam.lab01.Lab01Activity"
             android:exported="true" />
-
         <activity
             android:name="pl.wsei.pam.lab06.Lab06Activity"
             android:exported="true" />
+        <receiver
+            android:name="pl.wsei.pam.lab06.NotificationBroadcastReceiver"
+            android:enabled="true" />
+
 
     </application>
+
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
 
 </manifest>
