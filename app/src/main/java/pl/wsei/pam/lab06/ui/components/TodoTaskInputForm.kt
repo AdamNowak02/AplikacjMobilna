@@ -23,8 +23,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import pl.wsei.pam.lab06.NotificationHandler
 import pl.wsei.pam.lab06.model.LocalDateConverter
 import pl.wsei.pam.lab06.model.Priority
+import pl.wsei.pam.lab06.model.TodoTask
 import pl.wsei.pam.lab06.model.TodoTaskForm
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -33,8 +35,23 @@ fun TodoTaskInputForm(
     item: TodoTaskForm,
     modifier: Modifier = Modifier,
     onValueChange: (TodoTaskForm) -> Unit = {},
-    enabled: Boolean = true
+    enabled: Boolean = true,
+    notificationHandler: NotificationHandler, // Przekazanie handlera
+    taskList: List<TodoTaskForm> // Lista zadań do sprawdzenia, które ma najbliższy deadline
 ) {
+    // Funkcja konwertująca TodoTaskForm na TodoTask
+    fun TodoTaskForm.toTodoTask(): TodoTask {
+        // Konwersja deadline z Long na LocalDate za pomocą LocalDateConverter
+        val localDate = LocalDateConverter.fromMillis(this.deadline)
+        return TodoTask(
+            id = 0, // Zostawiamy domyślny id, zakładając, że Room generuje je automatycznie
+            title = this.title,
+            deadline = localDate,
+            isDone = this.isDone,
+            priority = Priority.valueOf(this.priority)
+        )
+    }
+
     Text("Tytuł zadania")
 
     TextField(
@@ -67,7 +84,15 @@ fun TodoTaskInputForm(
                 Button(onClick = {
                     showDialog = false
                     datePickerState.selectedDateMillis?.let {
-                        onValueChange(item.copy(deadline = it))
+                        val updatedItem = item.copy(deadline = it)
+                        onValueChange(updatedItem)
+
+                        // Po wybraniu daty, ustaw alarm dla najbliższego zadania
+                        val nearestTask = taskList.minByOrNull { it.deadline }
+                        nearestTask?.let {
+                            // Konwertowanie na TodoTask
+                            notificationHandler.scheduleAlarmForTask(it.toTodoTask())
+                        }
                     }
                 }) {
                     Text("Pick")
@@ -93,7 +118,6 @@ fun TodoTaskInputForm(
             Text(priority.name)
         }
     }
-
 
     Spacer(modifier = Modifier.height(16.dp))
 
