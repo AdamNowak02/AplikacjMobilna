@@ -8,12 +8,10 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -22,7 +20,8 @@ fun AppTopBar(
     navController: NavController,
     title: String,
     showBackIcon: Boolean,
-    route: String
+    route: String,
+    onSaveClick: () -> Unit = {}
 ) {
     TopAppBar(
         colors = TopAppBarDefaults.topAppBarColors(
@@ -32,7 +31,10 @@ fun AppTopBar(
         title = { Text(text = title) },
         navigationIcon = {
             if (showBackIcon) {
-                IconButton(onClick = { navController.navigate(route) }) {
+                IconButton(onClick = {
+                    onSaveClick()
+                    navController.popBackStack()
+                }) {
                     Icon(
                         imageVector = Icons.Filled.ArrowBack,
                         contentDescription = "Back"
@@ -41,17 +43,11 @@ fun AppTopBar(
             }
         },
         actions = {
-            if (route != "form") {
-                OutlinedButton(onClick = { navController.navigate("list") }) {
-                    Text(text = "Zapisz", fontSize = 18.sp)
-                }
-            } else {
-                IconButton(onClick = { /* TODO */ }) {
-                    Icon(imageVector = Icons.Default.Settings, contentDescription = "")
-                }
-                IconButton(onClick = { /* TODO */ }) {
-                    Icon(imageVector = Icons.Default.Home, contentDescription = "")
-                }
+            IconButton(onClick = { navController.navigate("settings") }) {
+                Icon(imageVector = Icons.Default.Settings, contentDescription = "Ustawienia")
+            }
+            IconButton(onClick = { navController.navigate("list") }) {
+                Icon(imageVector = Icons.Default.Home, contentDescription = "Lista")
             }
         }
     )
