@@ -7,6 +7,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import pl.wsei.pam.lab06.data.TodoTaskRepository
 import pl.wsei.pam.lab06.model.TodoTask
 
@@ -24,6 +25,15 @@ class ListViewModel(
                     initialValue = ListUiState()
                 )
         }
+
+    /** nowa metoda do przestawiania `isDone` */
+    fun toggleDone(task: TodoTask) {
+        viewModelScope.launch {
+            val updatedTask = task.copy(isDone = !task.isDone)
+            repository.updateItem(updatedTask)
+        }
+    }
+
 
     companion object {
         private const val TIMEOUT_MILLIS = 5_000L

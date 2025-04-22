@@ -1,6 +1,7 @@
 package pl.wsei.pam.lab06.ui.components
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -12,6 +13,7 @@ import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DisplayMode
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.rememberDatePickerState
@@ -36,15 +38,14 @@ fun TodoTaskInputForm(
     modifier: Modifier = Modifier,
     onValueChange: (TodoTaskForm) -> Unit = {},
     enabled: Boolean = true,
-    notificationHandler: NotificationHandler, // Przekazanie handlera
-    taskList: List<TodoTaskForm> // Lista zadań do sprawdzenia, które ma najbliższy deadline
+    notificationHandler: NotificationHandler,
+    taskList: List<TodoTaskForm>
 ) {
     // Funkcja konwertująca TodoTaskForm na TodoTask
     fun TodoTaskForm.toTodoTask(): TodoTask {
-        // Konwersja deadline z Long na LocalDate za pomocą LocalDateConverter
         val localDate = LocalDateConverter.fromMillis(this.deadline)
         return TodoTask(
-            id = 0, // Zostawiamy domyślny id, zakładając, że Room generuje je automatycznie
+            id = 0,
             title = this.title,
             deadline = localDate,
             isDone = this.isDone,
@@ -52,81 +53,89 @@ fun TodoTaskInputForm(
         )
     }
 
-    Text("Tytuł zadania")
+    Column(modifier = modifier) {
+        Text("Tytuł zadania")
 
-    TextField(
-        value = item.title,
-        onValueChange = {
-            onValueChange(item.copy(title = it))
-        }
-    )
-
-    val datePickerState = rememberDatePickerState(
-        initialDisplayMode = DisplayMode.Picker,
-        yearRange = IntRange(2000, 2030),
-        initialSelectedDateMillis = item.deadline,
-    )
-    var showDialog by remember { mutableStateOf(false) }
-
-    Text(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable { showDialog = true },
-        text = "Deadline: ${LocalDateConverter.fromMillis(item.deadline)}",
-        textAlign = TextAlign.Center,
-        style = MaterialTheme.typography.headlineMedium
-    )
-
-    if (showDialog) {
-        DatePickerDialog(
-            onDismissRequest = { showDialog = false },
-            confirmButton = {
-                Button(onClick = {
-                    showDialog = false
-                    datePickerState.selectedDateMillis?.let {
-                        val updatedItem = item.copy(deadline = it)
-                        onValueChange(updatedItem)
-
-                        // Po wybraniu daty, ustaw alarm dla najbliższego zadania
-                        val nearestTask = taskList.minByOrNull { it.deadline }
-                        nearestTask?.let {
-                            // Konwertowanie na TodoTask
-                            notificationHandler.scheduleAlarmForTask(it.toTodoTask())
-                        }
-                    }
-                }) {
-                    Text("Pick")
-                }
+        TextField(
+            value = item.title,
+            onValueChange = {
+                onValueChange(item.copy(title = it))
             }
-        ) {
-            DatePicker(state = datePickerState, showModeToggle = true)
-        }
-    }
-
-    Spacer(modifier = Modifier.height(16.dp))
-
-    // Priority
-    Text("Priorytet:")
-    Priority.values().forEach { priority ->
-        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-            androidx.compose.material3.RadioButton(
-                selected = item.priority == priority.name,
-                onClick = {
-                    onValueChange(item.copy(priority = priority.name))
-                }
-            )
-            Text(priority.name)
-        }
-    }
-
-    Spacer(modifier = Modifier.height(16.dp))
-
-    // IsDone
-    Row {
-        Checkbox(
-            checked = item.isDone,
-            onCheckedChange = { onValueChange(item.copy(isDone = it)) }
         )
-        Text("Wykonane")
+
+        val datePickerState = rememberDatePickerState(
+            initialDisplayMode = DisplayMode.Picker,
+            yearRange = IntRange(2000, 2030),
+            initialSelectedDateMillis = item.deadline,
+        )
+        var showDialog by remember { mutableStateOf(false) }
+
+        Text(
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { showDialog = true },
+            text = "Deadline: ${LocalDateConverter.fromMillis(item.deadline)}",
+            textAlign = TextAlign.Center,
+            style = MaterialTheme.typography.headlineMedium
+        )
+
+        if (showDialog) {
+            DatePickerDialog(
+                onDismissRequest = { showDialog = false },
+                confirmButton = {
+                    Button(onClick = {
+                        showDialog = false
+                        datePickerState.selectedDateMillis?.let {
+                            val updatedItem = item.copy(deadline = it)
+                            onValueChange(updatedItem)
+
+                            // Ustaw powiadomienie dla najbliższego zadania
+                            val nearestTask = taskList.minByOrNull { it.deadline }
+                            nearestTask?.let {
+                                notificationHandler.scheduleAlarmForTask(it.toTodoTask())
+                            }
+                        }
+                    }) {
+                        Text("Pick")
+                    }
+                }
+            ) {
+                DatePicker(state = datePickerState, showModeToggle = true)
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Text("Priorytet:")
+        Priority.values().forEach { priority ->
+            Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                RadioButton(
+                    selected = item.priority == priority.name,
+                    onClick = {
+                        onValueChange(item.copy(priority = priority.name))
+                    }
+                )
+                Text(priority.name)
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        Row {
+            Checkbox(
+                checked = item.isDone,
+                onCheckedChange = { onValueChange(item.copy(isDone = it)) }
+            )
+            Text("Wykonane")
+        }
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // 🔔 Przycisk do testowania powiadomień
+        Button(onClick = {
+            notificationHandler.showSimpleNotification()
+        }) {
+            Text("🔔 Testuj powiadomienie")
+        }
     }
 }

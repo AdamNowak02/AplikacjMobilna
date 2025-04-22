@@ -14,6 +14,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material3.Button
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
@@ -22,6 +24,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -35,6 +38,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -78,7 +82,10 @@ fun ListScreen(
     ) { innerPadding ->
         LazyColumn(modifier = Modifier.padding(innerPadding)) {
             items(items = listUiState.items) { item ->
-                ListItem(item = item)
+                ListItem(
+                    item = item,
+                    onToggleDone = { viewModel.toggleDone(item) }
+                )
             }
         }
     }
@@ -86,28 +93,48 @@ fun ListScreen(
 
 // ELEMENT LISTY
 @Composable
-fun ListItem(item: TodoTask, modifier: Modifier = Modifier) {
+fun ListItem(
+    item: TodoTask,
+    modifier: Modifier = Modifier,
+    onToggleDone: () -> Unit
+) {
     ElevatedCard(
         modifier = modifier
             .fillMaxWidth()
             .heightIn(120.dp)
             .padding(8.dp),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 4.dp
-        )
+        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
         Column(modifier = Modifier.padding(8.dp)) {
             Text(text = "Tytuł: ${item.title}")
             Text(text = "Data: ${item.deadline}")
             Text(text = "Priorytet: ${item.priority.name}")
-            Text(text = "Wykonane: ${if (item.isDone) "Tak" else "Nie"}")
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+            ) {
+                IconButton(onClick = onToggleDone) {
+                    Icon(
+                        imageVector = if (item.isDone) Icons.Filled.Check else Icons.Filled.Close,
+                        contentDescription = if (item.isDone) "Zrobione" else "Nie zrobione",
+                        tint = if (item.isDone) Color.Green else Color.Red
+                    )
+                }
+                Text(
+                    text = if (item.isDone) " Zrobione" else " Nie zrobione",
+                    modifier = Modifier.padding(start = 4.dp)
+                )
+            }
         }
     }
 }
 
-// FORMULARZ ZADANIA
+// FORMULARZ ZADAŃ
 @Composable
-fun FormScreen(navController: NavController, todoTaskRepository: pl.wsei.pam.lab06.data.TodoTaskRepository) {
+fun FormScreen(
+    navController: NavController,
+    todoTaskRepository: pl.wsei.pam.lab06.data.TodoTaskRepository
+) {
     var title by remember { mutableStateOf("") }
     var deadline by remember { mutableStateOf(LocalDate.now()) }
     var priority by remember { mutableStateOf(Priority.Medium) }

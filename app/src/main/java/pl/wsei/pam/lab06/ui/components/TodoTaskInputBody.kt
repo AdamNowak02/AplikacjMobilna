@@ -1,7 +1,8 @@
-
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -25,8 +26,15 @@ fun TodoTaskInputBody(
             item = todoUiState.todoTask,
             onValueChange = onItemValueChange,
             modifier = modifier,
-            notificationHandler = notificationHandler, // Przekazanie notificationHandler
-            taskList = listOf(todoUiState.todoTask) // Możesz zmienić to na prawdziwą listę zadań
+            notificationHandler = notificationHandler,
+            taskList = listOf(todoUiState.todoTask)
         )
+
+        // 🔔 Przycisk testowy do wywołania powiadomienia
+        Button(onClick = {
+            notificationHandler.showSimpleNotification()
+        }) {
+            Text("🔔 Testuj powiadomienie")
+        }
     }
 }

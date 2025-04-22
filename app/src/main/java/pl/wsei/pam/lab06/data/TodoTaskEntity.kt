@@ -9,7 +9,7 @@ import java.time.LocalDate
 @Entity(tableName = "tasks")
 data class TodoTaskEntity(
     @PrimaryKey(autoGenerate = true)
-    val id: Int,
+    val id: Int = 0, // <- ważne: domyślnie 0, Room wygeneruje nowe id
     val title: String,
     val deadline: LocalDate,
     var isDone: Boolean,
@@ -22,7 +22,7 @@ data class TodoTaskEntity(
     companion object {
         fun fromModel(model: TodoTask): TodoTaskEntity {
             return TodoTaskEntity(
-                id = model.id,
+                id = if (model.id == 0) 0 else model.id, // <- kluczowa linia!
                 title = model.title,
                 deadline = model.deadline,
                 isDone = model.isDone,

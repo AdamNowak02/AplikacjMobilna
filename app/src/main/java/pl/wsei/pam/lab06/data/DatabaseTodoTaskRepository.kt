@@ -21,11 +21,10 @@ class DatabaseTodoTaskRepository(private val dao: TodoTaskDao) : TodoTaskReposit
     }
 
     override suspend fun deleteItem(item: TodoTask) {
-        dao.removeById(TodoTaskEntity.fromModel(item))
+        dao.removeById(item.id) // <- tylko id
     }
 
     override suspend fun updateItem(item: TodoTask) {
-        // Tutaj będzie konkretna implementacja w późniejszym kroku
-        dao.update(TodoTaskEntity.fromModel(item))
+        dao.update(TodoTaskEntity.fromModel(item)) // wszystko gra
     }
 }
