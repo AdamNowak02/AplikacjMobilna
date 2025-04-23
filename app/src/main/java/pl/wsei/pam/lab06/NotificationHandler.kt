@@ -10,6 +10,7 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import pl.wsei.pam.lab06.model.TodoTask
+import pl.wsei.pam.lab06.settings.NotificationPreferences
 import java.util.Calendar
 
 class NotificationHandler(private val context: Context) {
@@ -36,34 +37,47 @@ class NotificationHandler(private val context: Context) {
         }
     }
 
-    // FUNKCJA do natychmiastowego testowego powiadomienia (opcjonalna)
-    fun showSimpleNotification() {
-        val builder = NotificationCompat.Builder(context, channelId)
-            .setSmallIcon(android.R.drawable.ic_dialog_info)
-            .setContentTitle("Powiadomienie")
-            .setContentText("To jest proste powiadomienie.")
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-
-        val notificationManager = NotificationManagerCompat.from(context)
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
-            context.checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) == android.content.pm.PackageManager.PERMISSION_GRANTED
-        ) {
-            notificationManager.notify(1001, builder.build())
-        }
+    /** Pozwala wywołać alarm z pojedynczym parametrem — pobierze preferencje wewnętrznie */
+    fun scheduleAlarmForTask(task: TodoTask) {
+        val prefs = NotificationPreferences(context)
+        scheduleAlarmForTask(task, prefs)
     }
 
-    // Zmodyfikowana funkcja do ustawienia alarmu
-    fun scheduleAlarmForTask(task: TodoTask, hoursBefore: Int = 24, repeatCount: Int = 3) {
-        cancelAlarm() // anuluj poprzedni alarm
+    /**
+     * Oryginalna metoda, która ustawia powtarzalny alarm
+     * @param task zadanie
+     * @param preferences ustawienia godzin/dni/repeatCount
+     */
+    fun scheduleAlarmForTask(
+        task: TodoTask,
+        preferences: NotificationPreferences
+    ) {
+        cancelAlarm()
 
-        // Konwersja daty zadania do LocalDateTime z domyślną godziną 8:00
+        val daysBefore = preferences.getNotificationLeadTime()
+        val hoursBefore = preferences.getNotificationHour()
+        val repeatCount = preferences.load().second
+
+        // ustawiamy datę o godzinie hoursBefore tego dnia
         val calendar = Calendar.getInstance().apply {
-            timeInMillis = 0
-            set(task.deadline.year, task.deadline.monthValue - 1, task.deadline.dayOfMonth, 8, 0, 0) // Domyślnie o 8:00 rano
+            set(
+                task.deadline.year,
+                task.deadline.monthValue - 1,
+                task.deadline.dayOfMonth,
+                hoursBefore,
+                0,
+                0
+            )
         }
 
-        // Ustawiamy alarm na określoną datę i godzinę (8:00 rano)
-        val triggerTimeMillis = calendar.timeInMillis - hoursBefore * 60 * 60 * 1000L // Dodajemy parametr hoursBefore (np. 24 godziny wcześniej)
+        // odejmujemy dniBefore dni
+        val triggerTimeMillis = calendar.timeInMillis - (daysBefore * 24 * 60 * 60 * 1000L)
+
+        // jeśli już minęło, pokazujemy od razu
+        if (System.currentTimeMillis() >= triggerTimeMillis) {
+            showNotificationNow(task.title)
+            return
+        }
 
         val intent = Intent(context, NotificationReceiver::class.java).apply {
             putExtra("title", task.title)
@@ -81,12 +95,27 @@ class NotificationHandler(private val context: Context) {
         alarmManager.setRepeating(
             AlarmManager.RTC_WAKEUP,
             triggerTimeMillis,
-            4 * 60 * 60 * 1000L, // Powtarzaj alarm co 4 godziny
+            4 * 60 * 60 * 1000L, // co 4 godziny
             pendingIntent
         )
     }
 
-    // Funkcja do anulowania alarmu
+    private fun showNotificationNow(title: String) {
+        val builder = NotificationCompat.Builder(context, channelId)
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setContentTitle("Zbliżający się termin!")
+            .setContentText("Zadanie: $title ma termin wkrótce!")
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+
+        val notificationManager = NotificationManagerCompat.from(context)
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+            context.checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) ==
+            android.content.pm.PackageManager.PERMISSION_GRANTED
+        ) {
+            notificationManager.notify((0..9999).random(), builder.build())
+        }
+    }
+
     fun cancelAlarm() {
         val intent = Intent(context, NotificationReceiver::class.java)
         val pendingIntent = PendingIntent.getBroadcast(
@@ -96,5 +125,22 @@ class NotificationHandler(private val context: Context) {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         alarmManager.cancel(pendingIntent)
+    }
+
+    /** Proste testowe powiadomienie */
+    fun showSimpleNotification() {
+        val builder = NotificationCompat.Builder(context, channelId)
+            .setSmallIcon(android.R.drawable.ic_dialog_info)
+            .setContentTitle("Powiadomienie")
+            .setContentText("To jest proste powiadomienie.")
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+
+        val notificationManager = NotificationManagerCompat.from(context)
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+            context.checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) ==
+            android.content.pm.PackageManager.PERMISSION_GRANTED
+        ) {
+            notificationManager.notify(1001, builder.build())
+        }
     }
 }

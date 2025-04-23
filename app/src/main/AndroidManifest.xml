@@ -57,7 +57,7 @@
 
         <receiver
             android:name="pl.wsei.pam.lab06.NotificationReceiver"
-            android:exported="false" />
+            android:exported="true" />
 
     </application>
 

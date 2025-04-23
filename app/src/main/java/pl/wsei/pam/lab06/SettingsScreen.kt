@@ -19,13 +19,12 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 
 @Composable
-fun SettingsScreen(navController: NavController, prefs: NotificationPreferences) {  // Zmieniona nazwa klasy
-    // Załaduj zapisane dane z preferencji
-    val (savedHoursBefore, savedRepeatCount) = prefs.load()
+fun SettingsScreen(navController: NavController, prefs: NotificationPreferences) {
+    val (savedHoursBefore, savedRepeatCount, savedDaysBefore) = prefs.load()
 
-    // Przechowywanie wartości w stanie
     var hoursBefore by remember { mutableStateOf(savedHoursBefore.toString()) }
     var repeatCount by remember { mutableStateOf(savedRepeatCount.toString()) }
+    var daysBefore by remember { mutableStateOf(savedDaysBefore.toString()) }
 
     Column(modifier = Modifier.padding(16.dp)) {
         Text("Ustawienia powiadomień", style = MaterialTheme.typography.titleLarge)
@@ -46,15 +45,25 @@ fun SettingsScreen(navController: NavController, prefs: NotificationPreferences)
             modifier = Modifier.fillMaxWidth()
         )
 
+        OutlinedTextField(
+            value = daysBefore,
+            onValueChange = { daysBefore = it },
+            label = { Text("Ile dni przed deadlinem?") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
         Spacer(modifier = Modifier.height(16.dp))
 
         Button(onClick = {
-            // Zapisz dane do preferencji
-            prefs.save(hoursBefore.toIntOrNull() ?: 24, repeatCount.toIntOrNull() ?: 3)
-            // Przejdź z powrotem do poprzedniego ekranu
+            prefs.save(
+                hoursBefore.toIntOrNull() ?: 24,
+                repeatCount.toIntOrNull() ?: 3,
+                daysBefore.toIntOrNull() ?: 1
+            )
             navController.popBackStack()
         }) {
             Text("Zapisz")
         }
     }
 }
+

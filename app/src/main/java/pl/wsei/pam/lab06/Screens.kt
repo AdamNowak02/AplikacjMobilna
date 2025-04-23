@@ -46,6 +46,7 @@ import androidx.navigation.NavController
 import kotlinx.coroutines.launch
 import pl.wsei.pam.lab06.model.Priority
 import pl.wsei.pam.lab06.model.TodoTask
+import pl.wsei.pam.lab06.settings.NotificationPreferences
 import pl.wsei.pam.lab06.ui.viewmodel.AppViewModelProvider
 import pl.wsei.pam.lab06.ui.viewmodel.ListViewModel
 import java.time.LocalDate
@@ -249,7 +250,16 @@ fun FormScreen(
                         priority = priority
                     )
                     scope.launch {
+                        // zapis do bazy
                         todoTaskRepository.insertItem(newTask)
+
+                        // ustawienie alarmu:
+                        val prefs = NotificationPreferences(context)
+                        val notificationHandler = NotificationHandler(context)
+                        notificationHandler.scheduleAlarmForTask(
+                            newTask,
+                            preferences = prefs           // <-- tu dodajemy brakujący argument
+                        )
                     }
                     navController.navigate("list")
                 },

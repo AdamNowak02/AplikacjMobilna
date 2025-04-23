@@ -1,5 +1,3 @@
-// NotificationPreferences.kt
-
 package pl.wsei.pam.lab06.settings
 
 import android.content.Context
@@ -9,26 +7,26 @@ class NotificationPreferences(context: Context) {
     private val prefs: SharedPreferences =
         context.getSharedPreferences("prefs", Context.MODE_PRIVATE)
 
-    fun save(hoursBefore: Int, repeatCount: Int) {
+    fun save(hoursBefore: Int, repeatCount: Int, daysBefore: Int) {
         prefs.edit()
             .putInt("hoursBefore", hoursBefore)
             .putInt("repeatCount", repeatCount)
+            .putInt("notificationLeadTime", daysBefore)
             .apply()
     }
 
-    fun load(): Pair<Int, Int> {
+    fun load(): Triple<Int, Int, Int> {
         val hoursBefore = prefs.getInt("hoursBefore", 24)
         val repeatCount = prefs.getInt("repeatCount", 3)
-        return Pair(hoursBefore, repeatCount)
+        val daysBefore = prefs.getInt("notificationLeadTime", 1)
+        return Triple(hoursBefore, repeatCount, daysBefore)
     }
 
-    // Metoda do uzyskania liczby dni przed powiadomieniem
     fun getNotificationLeadTime(): Int {
-        return prefs.getInt("notificationLeadTime", 1) // Wartość domyślna 1 dzień przed
+        return prefs.getInt("notificationLeadTime", 1)
     }
 
-    // Metoda do uzyskania godziny powiadomienia
     fun getNotificationHour(): Int {
-        return prefs.getInt("notificationHour", 8) // Wartość domyślna godzina 8 rano
+        return prefs.getInt("notificationHour", 8)
     }
 }
